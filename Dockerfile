@@ -1,17 +1,13 @@
-FROM php:8.1-fpm
+FROM php:8.0-fpm-alpine
 
-WORKDIR /app
+ADD ./php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-COPY composer.json composer.lock .
+RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
 
-RUN composer install
+RUN mkdir -p /var/www/html
 
-COPY . .
+ADD ./src/ /var/www/html
 
-RUN chmod -R 775 storage
+RUN docker-php-ext-install pdo pdo_mysql
 
-RUN chown -R www-data:www-data storage
-
-EXPOSE 80
-
-CMD ["php", "artisan", "serve"]
+RUN chown -R laravel:laravel /var/www/html
